@@ -332,6 +332,11 @@ async function activatePlugins(broker) {
 			} catch(e) {
 				console.error(e);
 			}
+		} else {
+			loadPluginRoutes(broker, pluginID, {
+				"enabled": true,
+				"routes": {}
+			});
 		}
 		//service
 	}
