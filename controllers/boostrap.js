@@ -328,11 +328,7 @@ async function activatePlugins(broker) {
 		if(fs.existsSync(routeFile)) {
 			try {
 				const tempConfig = JSON.parse(fs.readFileSync(routeFile, "utf8"));
-				if(tempConfig.enabled) {
-					loadPluginRoutes(broker, pluginID, tempConfig);
-				} else {
-					console.log(`Route Not Enabled for ${pluginID}`);
-				}
+				loadPluginRoutes(broker, pluginID, tempConfig);
 			} catch(e) {
 				console.error(e);
 			}
@@ -351,31 +347,35 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 	};
 
 	// console.log("routeConfig", routeConfig);
-	_.each(routeConfig.routes, function(conf, path) {
-		var rPath = `/${pluginName}${path}`;
-		if(conf.method==null) conf.method = "GET";
+	if(routeConfig.enabled) {
+		_.each(routeConfig.routes, function(conf, path) {
+			var rPath = `/${pluginName}${path}`;
+			if(conf.method==null) conf.method = "GET";
 
-		if(!conf.params) conf.params = {};
+			if(!conf.params) conf.params = {};
 
-		//generateNewAction(conf, rPath);
-		rPath = rPath.replaceAll(/\//g,"_").replace(/:/g,'');
-		if(rPath[0]=="_") rPath = rPath.substring(1);
+			//generateNewAction(conf, rPath);
+			rPath = rPath.replaceAll(/\//g,"_").replace(/:/g,'');
+			if(rPath[0]=="_") rPath = rPath.substring(1);
 
-		serviceSchema.actions[rPath] = {
-				rest: {
-					method: conf.method.toUpperCase(),
-					path: path
-				},
-				params: conf.params,
-				async handler(ctx) {
-					// console.log("ROUTE_REMOTE", conf.data);
-					// return {"status": "okay", "results": conf};
+			serviceSchema.actions[rPath] = {
+					rest: {
+						method: conf.method.toUpperCase(),
+						path: path
+					},
+					params: conf.params,
+					async handler(ctx) {
+						// console.log("ROUTE_REMOTE", conf.data);
+						// return {"status": "okay", "results": conf};
 
-					return runAction(ctx, conf, path, rPath);
+						return runAction(ctx, conf, path, rPath);
+					}
 				}
-			}
-	})
-
+		})
+	} else {
+		console.log(`Route Not Enabled for ${pluginID}`);
+	}
+	
 	serviceSchema.actions["source"] = {
 		rest: {
 			method: "GET",
