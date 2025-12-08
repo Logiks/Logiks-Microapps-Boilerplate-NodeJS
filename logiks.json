@@ -1,0 +1,33 @@
+{
+    "name": "demo_application",
+    "version": "1.0",
+    "description": "Plugin for Logiks Apps",
+    "keywords": "logiks,modules",
+    "license": "SILK",
+    "marketid": "",
+    "status": "alpha",
+    "private": true,
+    "type": "modules",
+    "homepage": "https://github.com/Logiks/Logiks-Microapps-Boilerplate-NodeJS",
+    "bugs": "https://support.smartinfologiks.com",
+    "policies": {
+        "budget.tab.access": "false",
+        "budget.create.access": "false",
+        "budget.view.access": "false",
+        "budget.update.access": "false"
+    },
+    "dependencies": {
+        "core": "+5.0.0"
+    },
+    "repository": {
+        "url": "",
+        "type": "git"
+    },
+    "authors": [
+        {
+            "name": "SmartinfoLogiks Team",
+            "email": "admin@smartinfologiks.com",
+            "authorid": "silkadmin"
+        }
+    ]
+}
