@@ -375,7 +375,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 	} else {
 		console.log(`Route Not Enabled for ${pluginID}`);
 	}
-	
+
 	serviceSchema.actions["source"] = {
 		rest: {
 			method: "GET",
@@ -393,7 +393,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			
 			const sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
 			
-			// console.log("sourceFile", sourceFile);
+			console.log("sourceFile", sourceFile);
 			if(fs.existsSync(sourceFile)) {
 				const sourceData = fs.readFileSync(sourceFile, "utf8");
 				try {
