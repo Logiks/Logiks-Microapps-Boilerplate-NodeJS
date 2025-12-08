@@ -400,13 +400,13 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			
 			console.log("sourceFile", sourceFile);
 			if(fs.existsSync(sourceFile)) {
-				const sourceData = fs.readFileSync(sourceFile, "utf8");
+				var sourceData = fs.readFileSync(sourceFile, "utf8");
 				try {
 					if(ext=="json") {
 						const temp = JSON.parse(sourceData);
 						if(temp) sourceData = temp;
 					}
-				} catch(e) {}
+				} catch(e) {console.error(e)}
 				return sourceData;
 			} else {
 				throw new LogiksError(
