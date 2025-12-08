@@ -392,8 +392,10 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			ext = ext[ext.length-1];
 			
 			const sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
+			
+			// console.log("sourceFile", sourceFile);
 			if(fs.existsSync(sourceFile)) {
-				const sourceData = JSON.parse(fs.readFileSync(sourceFile, "utf8"));
+				const sourceData = fs.readFileSync(sourceFile, "utf8");
 				try {
 					if(ext=="json") {
 						const temp = JSON.parse(sourceData);
@@ -409,8 +411,6 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 					ctx.params
 				);
 			}
-
-			return "okay";
 		}
 	}
 
