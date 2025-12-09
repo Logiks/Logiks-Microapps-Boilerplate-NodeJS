@@ -1,8 +1,6 @@
 //For Starting the Plugin
 
 const { ServiceBroker } = require("moleculer");
-// const { Errors } = require("moleculer");
-// const { MoleculerClientError } = Errors;
 const { MoleculerError } = require("moleculer").Errors;
 const os = require("os");
 
