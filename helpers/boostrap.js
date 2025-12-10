@@ -56,12 +56,7 @@ module.exports = {
 		return broker;
 	},
 
-	connect: async function(broker) {
-		function getLocalServiceNames() {
-			const list = broker.registry.getServiceList({ onlyLocal: true });
-			return list.map(svc => svc.name);
-		}
-
+	connect: async function(broker, callback) {
 		// -------------------------
 		// SINGLE STARTUP REGISTRATION FUNCTION
 		// -------------------------
@@ -72,7 +67,7 @@ module.exports = {
 				host: os.hostname(),
 				pid: process.pid,
 				color: WORKER_COLOR,
-				services: getLocalServiceNames(),
+				services: getLocalServiceNames(broker),
 				menus: await PLUGINS.getMenus()
 			};
 
@@ -179,11 +174,12 @@ module.exports = {
 				});
 			}
 		}
-
+		
+		let BROKER_CONNECTED = false;
 		// Start worker
 		broker.start().then(async () => {
 			broker.logger.info("MicroApp Started & Connected to Cluster");
-			console.log("\n\x1b[34m%s\x1b[0m", "MicroApp Started & Connected to Cluster");
+			
 
 			await registerWithMainBroker();   // Startup registration
 			startHeartbeat();                 // Start health pings
@@ -191,10 +187,26 @@ module.exports = {
 			// Now hook transporter reconnect events
 			setupReconnectListener();
 
-			// broker.call("demo.find", { a: 5, b: 3 }).then(a=>console.log(`DEMO FIND`, a))
+			BROKER_CONNECTED = true;
+
 			return 0;
-		}).catch(err => console.error(`Error occured! ${err.message}`));
+		})
+		.catch(err => console.error(`Error occured! ${err.message}`))
+		.finally(a=> {
+			if(BROKER_CONNECTED) {
+				console.log("\n\x1b[34m%s\x1b[0m", "MicroApp Started & Connected to Cluster");
+			} else {
+				console.log("\n\x1b[31m%s\x1b[0m", "MicroApp Started & But could not connect Cluster");
+			}
+			
+			callback(BROKER_CONNECTED);
+		})
 
 		return broker;
 	}
+}
+
+function getLocalServiceNames(broker) {
+	const list = broker.registry.getServiceList({ onlyLocal: true });
+	return list.map(svc => svc.name);
 }

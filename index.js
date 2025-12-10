@@ -16,7 +16,7 @@ global.moment = require("moment");
 global.LOGIKS_CONFIG = JSON.parse(fs.readFileSync("./logiks.json", "utf8"));
 LOGIKS_CONFIG.ROOT_PATH = __dirname;
 
-// console.log(LOGIKS_CONFIG);
+//console.log(LOGIKS_CONFIG);
 
 //Load all helpers
 fs.readdirSync('./helpers/').forEach(function(file) {
@@ -49,9 +49,14 @@ async function main() {
 
     await PLUGINS.activatePlugins(broker);
     await PLUGINS.loadPlugins(broker);
-    await BASEAPP.connect(broker);
     
-    await BOOSTRAP.connect(broker);
+    BOOSTRAP.connect(broker, async function(connected) {
+        if(connected) {
+            await BASEAPP.connect(broker);
+        } else {
+            //Failed to connect to appserver
+        }
+    });
 }
 
 //starting the application service

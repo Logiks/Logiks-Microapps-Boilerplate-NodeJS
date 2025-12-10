@@ -43,20 +43,17 @@ module.exports = {
 
         await loadPluginCatalog(plugins);
 
-        // console.log("plugins", plugins, JSON.stringify(PLUGIN_CATALOG, "\n", 2));
+        //console.log("plugins", plugins, JSON.stringify(PLUGIN_CATALOG, "\n", 2));
 
         console.log("\n\x1b[32m%s\x1b[0m","Plugin Catalog Initalized and Loaded");
     },
 
     //Loading all Plugins and its Services
     activatePlugins: async function(broker) {
-        //console.log("PLUGIN_CATALOG", PLUGIN_CATALOG);
-
         const plugins = Object.keys(PLUGIN_CATALOG);
         for(i=0;i<plugins.length;i++) {
             const pluginID = plugins[i];
             const pluginConfig = PLUGIN_CATALOG[pluginID];
-            // console.log("PLUGIN", pluginID, pluginConfig);
 
             //To Activate below files + other services
             //api
@@ -172,7 +169,6 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 		methods: {}
 	};
 
-	// console.log("routeConfig", routeConfig);
 	if(routeConfig.enabled) {
 		_.each(routeConfig.routes, function(conf, path) {
 			var rPath = `/${pluginName}${path}`;
@@ -191,15 +187,12 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 					},
 					params: conf.params,
 					async handler(ctx) {
-						// console.log("ROUTE_REMOTE", conf.data);
-						// return {"status": "okay", "results": conf};
-
 						return runAction(ctx, conf, path, rPath);
 					}
 				}
 		})
 	} else {
-		console.log(`Route Not Enabled for ${pluginID}`);
+		log_info(`Route Not Enabled for ${pluginID}`);
 	}
 
 	serviceSchema.actions["source"] = {
@@ -212,14 +205,11 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			folder: "string",
 		},
 		async handler(ctx) {
-			// console.log("ROUTE_REMOTE", ctx.params);
-			
 			var ext = ctx.params.file.split(".");
 			ext = ext[ext.length-1];
 			
 			const sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
 			
-			console.log("sourceFile", sourceFile);
 			if(fs.existsSync(sourceFile)) {
 				var sourceData = fs.readFileSync(sourceFile, "utf8");
 				try {
@@ -239,8 +229,6 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			}
 		}
 	}
-
-	// console.log("XXXX", JSON.stringify(serviceSchema, "\n", 2));
 
 	broker.createService(serviceSchema);
 }
@@ -264,14 +252,14 @@ async function runAction(ctx, config, path, rPath) {
 					METHOD_PARAMS = APPINDEX.CONTROLLERS[METHOD[0]][METHOD[1]];
 
 				} else {
-					console.log("\x1b[31m%s\x1b[0m", `\nController Method ${METHOD[0]}.${METHOD[1]} not found for ROUTE-${rPath}`);
+					log_error(`Controller Method ${METHOD[0]}.${METHOD[1]} not found for ROUTE-${rPath}`);
 					// if(CONFIG.strict_routes) return;
 
 					METHOD_TYPE = "ERROR";
 					METHOD_PARAMS = `Controller Method ${METHOD[0]}.${METHOD[1]} not found`;
 				}
 			} else {
-				console.log("\x1b[31m%s\x1b[0m", `\nController ${METHOD[0]} not found for ROUTE-${rPath}`);
+				log_error(`Controller ${METHOD[0]} not found for ROUTE-${rPath}`);
 				// if(CONFIG.strict_routes) return;
 
 				METHOD_TYPE = "ERROR";
@@ -319,11 +307,11 @@ function generateController(controllerID, controllerConfig) {
     _.each(controllerConfig, function(confOri, funcKey) {
         newController[funcKey] = function(params, callback) {
             var conf = _.cloneDeep(confOri);
-            // console.log("GENERATED_CONTROLLER", funcKey, params, conf, confOri, controllerConfig[funcKey]);
+			log_info("GENERATED_CONTROLLER", funcKey);
+            //console.log("GENERATED_CONTROLLER", funcKey, params, conf, confOri, controllerConfig[funcKey]);
 
             switch(conf.type) {
                 case "sql":
-                    //console.log("conf", conf.where);
                     var additionalQuery = "";
                     if(conf.group_by) additionalQuery += ` GROUP BY ${conf.group_by}`;
                     if(conf.order_by) additionalQuery += ` ORDER BY ${conf.order_by}`;
@@ -334,7 +322,6 @@ function generateController(controllerID, controllerConfig) {
                     })
 
                     db_selectQ("appdb", conf.table, conf.columns, conf.where, {}, function(data, errorMsg) {
-                        // console.log("XXXXXXX", data, errorMsg);
                         if(errorMsg) callback([], "", errorMsg);
                         else callback(data, "");
                     }, additionalQuery);
