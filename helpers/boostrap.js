@@ -68,7 +68,8 @@ module.exports = {
 				pid: process.pid,
 				color: WORKER_COLOR,
 				services: getLocalServiceNames(broker),
-				menus: await PLUGINS.getMenus()
+				menus: await PLUGINS.getMenus(),
+				plugins: PLUGINS.listPlugins()
 			};
 
 			let attempt = 0;
@@ -81,9 +82,12 @@ module.exports = {
 						retries: 0
 					});
 
+					await BASEAPP.connect(broker);
+
 					broker.logger.info("Worker successfully registered with main broker", payload);
 					break;
 				} catch (err) {
+					console.error("ERROR Registering Application", err);
 					broker.logger.warn(
 						`⏳ Main broker not ready yet. Retry ${attempt} in 5s...`,
 						err.message
@@ -174,12 +178,11 @@ module.exports = {
 				});
 			}
 		}
-		
+
 		let BROKER_CONNECTED = false;
 		// Start worker
 		broker.start().then(async () => {
 			broker.logger.info("MicroApp Started & Connected to Cluster");
-			
 
 			await registerWithMainBroker();   // Startup registration
 			startHeartbeat();                 // Start health pings
@@ -188,6 +191,17 @@ module.exports = {
 			setupReconnectListener();
 
 			BROKER_CONNECTED = true;
+
+			broker.localBus.on("$node.connected", async payload => {
+				BROKER_CONNECTED = true;
+				await registerWithMainBroker();
+				broker.logger.info("Node connected:", payload.node.id);
+			});
+
+			broker.localBus.on("$node.disconnected", async payload => {
+				BROKER_CONNECTED = false;
+				broker.logger.warn("Node disconnected:", payload.node.id);
+			});
 
 			return 0;
 		})

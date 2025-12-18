@@ -1,6 +1,7 @@
 //All Connections and features available on the Main AppServer or across other applications should be available here
 
 var MAIN_BROKER = null;
+var HELPER_LIST = [];
 
 module.exports = {
 
@@ -19,12 +20,24 @@ module.exports = {
         const helperList = await _helper("list_helpers");
         log_info("HELPERS_ON_SERVER", helperList);
 
+        if(HELPER_LIST && HELPER_LIST.length>0) {
+            _.each(HELPER_LIST, function(helperId, k) {
+                try {
+                    delete global[helperId];
+                    delete HELPER_LIST[k];
+                } catch(e) {}
+            })
+        }
+        HELPER_LIST = Object.values(HELPER_LIST);
+
         _.each(helperList, function(helperId, k) {
+            HELPER_LIST.push(helperId);
             global[helperId] = new UniversalAPI(helperId);
         });
 
+        console.log("HELPER_LIST", HELPER_LIST);
         
-        log_info("CONNECTED_NODES", listNodes());
+        log_info("CONNECTED_NODES", await listNodes());
     }
 }
 

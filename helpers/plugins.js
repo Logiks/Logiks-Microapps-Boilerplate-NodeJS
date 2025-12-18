@@ -35,6 +35,10 @@ module.exports = {
         return Object.fromEntries(results);
     },
 
+	listPlugins: function() {
+		return Object.keys(PLUGIN_CATALOG);
+	},
+
     loadPlugins: async function(broker) {
         //Catalog the plugins folder
         var plugins = await fsPromise.readdir(LOGIKS_CONFIG.ROOT_PATH+"/plugins/", { withFileTypes: true });

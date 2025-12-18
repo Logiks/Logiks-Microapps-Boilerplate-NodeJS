@@ -52,7 +52,7 @@ async function main() {
     
     BOOSTRAP.connect(broker, async function(connected) {
         if(connected) {
-            await BASEAPP.connect(broker);
+            //Connected to appserver
         } else {
             //Failed to connect to appserver
         }
