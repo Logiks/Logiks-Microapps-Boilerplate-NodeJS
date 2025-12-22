@@ -316,7 +316,7 @@ async function runAction(ctx, config, path, rPath) {
 
 	switch(METHOD_TYPE) {
 		case "CONTROLLER":
-			var data = await METHOD_PARAMS(_.extend({}, ctx.params, ctx.query));
+			var data = await METHOD_PARAMS(ctx, config, path, rPath);//_.extend({}, ctx.params, ctx.query)
 
 			if(config.processor && config.processor.length>0 && config.processor.split(".").length>1) {
 				const processorObj = config.processor.split(".");
