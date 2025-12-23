@@ -312,11 +312,12 @@ async function runAction(ctx, config, path, rPath) {
 
 	APPINDEX.ROUTES[`${method}::${rPath}`] = config;
 
-	// console.info("runAction>>", METHOD_TYPE, METHOD_PARAMS, path, rPath, method, config, `${method}::${rPath}`);
+	// console.info("runAction>>", METHOD_TYPE, METHOD_PARAMS, path, rPath, method, config, `${method}::${rPath}`, _.extend({}, ctx.params, ctx.query));
+	// console.info("runAction_CTX>>", ctx);
 
 	switch(METHOD_TYPE) {
 		case "CONTROLLER":
-			var data = await METHOD_PARAMS(ctx, config, path, rPath);//_.extend({}, ctx.params, ctx.query)
+			var data = await METHOD_PARAMS(_.extend({}, ctx.params, ctx.query), ctx, config, path, rPath);
 
 			if(config.processor && config.processor.length>0 && config.processor.split(".").length>1) {
 				const processorObj = config.processor.split(".");
@@ -360,7 +361,7 @@ function generateController(controllerID, controllerConfig) {
                         conf.where[k] = _replace(v, params);
                     })
 
-                    db_selectQ("appdb", conf.table, conf.columns, conf.where, {}, function(data, errorMsg) {
+                    _DB.db_selectQ("appdb", conf.table, conf.columns, conf.where, {}, function(data, errorMsg) {
                         if(errorMsg) callback([], "", errorMsg);
                         else callback(data, "");
                     }, additionalQuery);
