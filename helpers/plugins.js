@@ -212,8 +212,15 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			var ext = ctx.params.file.split(".");
 			ext = ext[ext.length-1];
 			
-			const sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
+			var sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
+			var sourceFile_JSX = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`.replace('.js', ".jsx");
 			
+			if(ctx.params.params.rebuild || ctx.params.params.rebuild==="true") {
+				if(fs.existsSync(sourceFile_JSX)) {
+					sourceFile = sourceFile+1;
+				}
+			}
+
 			if(fs.existsSync(sourceFile)) {
 				var sourceData = fs.readFileSync(sourceFile, "utf8");
 				try {
@@ -223,6 +230,10 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 					}
 				} catch(e) {console.error(e)}
 				return sourceData;
+			} else if(fs.existsSync(sourceFile_JSX)) {
+				const jsContent = JITCOMPILER.compileJSX(sourceFile_JSX);
+
+				return jsContent;
 			} else {
 				throw new LogiksError(
 					"Invalid Source File",
