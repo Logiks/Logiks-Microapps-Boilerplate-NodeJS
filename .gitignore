@@ -7,8 +7,7 @@ yarn-error.log*
 zold/
 
 package-lock.json
-plugins/docs/
-plugins/profile/
+plugins/*
 
 ecosystem.config.js
 notes.txt

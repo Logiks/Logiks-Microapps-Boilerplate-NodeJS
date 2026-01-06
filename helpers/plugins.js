@@ -3,6 +3,7 @@
 const fsPromise = require("fs").promises;
 
 const PLUGIN_CATALOG = {};
+const PLUGIN_CONFIGS = {};
 const APPINDEX = {
     "CONTROLLERS":{},
     "PROCESSORS": {},
@@ -60,6 +61,25 @@ module.exports = {
             const pluginConfig = PLUGIN_CATALOG[pluginID];
 
             //To Activate below files + other services
+			var logiksConfig = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginID}/logiks.json`;
+			if(!fs.existsSync(logiksConfig)) {
+				console.error(`Plugin not loaded ${pluginID} due to missing config - logiks.json`);
+				continue;
+			}
+			try {
+				const tempConfig = JSON.parse(fs.readFileSync(logiksConfig, "utf8"));
+				logiksConfig = tempConfig;
+			} catch(e) {
+				console.error(`Plugin not loaded ${pluginID} due to corrupt config - logiks.json`, e);
+				continue;
+			}
+			PLUGIN_CONFIGS[pluginID] = {
+				"CONFIG": logiksConfig,
+				"CATALOG": pluginConfig
+			};
+
+			console.log("\n\x1b[33m%s\x1b[0m", `Activating Plugin - ${pluginID}`);
+
             //api
             const apiFile = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginID}/api.js`;
             if(fs.existsSync(apiFile)) {
