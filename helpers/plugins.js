@@ -78,13 +78,14 @@ module.exports = {
 				"CATALOG": pluginConfig
 			};
 
-			console.log("\n\x1b[33m%s\x1b[0m", `Activating Plugin - ${pluginID}`);
+			console.log("\x1b[33m%s\x1b[0m", `Activating Plugin - ${pluginID}`);
 
             //api
             const apiFile = LOGIKS_CONFIG.ROOT_PATH+`/plugins/${pluginID}/api.js`;
             if(fs.existsSync(apiFile)) {
                 try {
                     APPINDEX.CONTROLLERS[pluginID.toUpperCase()] = require(apiFile);
+					global[pluginID.toUpperCase()] = APPINDEX.CONTROLLERS[pluginID.toUpperCase()];
                 } catch(e) {
                     console.error(e);
                 }
@@ -98,6 +99,11 @@ module.exports = {
                     loadPluginRoutes(broker, pluginID, tempConfig);
                 } catch(e) {
                     console.error(e);
+
+					loadPluginRoutes(broker, pluginID, {
+						"enabled": true,
+						"routes": {}
+					});
                 }
             } else {
                 loadPluginRoutes(broker, pluginID, {
@@ -105,7 +111,6 @@ module.exports = {
                     "routes": {}
                 });
             }
-            //service
         }
 
         console.log("\n\x1b[34m%s\x1b[0m", "All Plugins Loaded and Activated");
@@ -203,17 +208,27 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			//generateNewAction(conf, rPath);
 			rPath = rPath.replaceAll(/\//g,"_").replace(/:/g,'');
 			if(rPath[0]=="_") rPath = rPath.substring(1);
+			if(rPath.substring(rPath.length-1,rPath.length)=="_") rPath = rPath.substring(0,rPath.length-1);
 
-			serviceSchema.actions[rPath] = {
-					rest: {
-						method: conf.method.toUpperCase(),
-						path: path
-					},
-					params: conf.params,
-					async handler(ctx) {
-						return runAction(ctx, conf, path, rPath);
-					}
+			const tempConfig = {
+				rest: {
+					method: conf.method.toUpperCase(),
+					path: path,
+					// fullPath: `/api/${pluginName}${path}`
+				},
+				async handler(ctx) {
+					return runAction(ctx, conf, path, rPath);
 				}
+			}
+
+			if(conf.params) tempConfig.params = conf.params;
+			if(conf.meta) tempConfig.meta = conf.meta;
+			if(conf.cache) tempConfig.cache = conf.cache;
+			if(conf.description) tempConfig.description = conf.description;
+			
+			serviceSchema.actions[rPath] = tempConfig;
+
+			// console.info(rPath, path, serviceSchema.actions[rPath]);
 		})
 	} else {
 		log_info(`Route Not Enabled for ${pluginID}`);
@@ -299,6 +314,24 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			}
 		}
 	}
+
+	//add the api file functions to services for calling across system
+	try {
+		if(APPINDEX.CONTROLLERS[pluginName.toUpperCase()]) {
+			Object.keys(APPINDEX.CONTROLLERS[pluginName.toUpperCase()]).forEach(a=>{
+				serviceSchema.actions[a] = {
+					rest: false,
+					async handler(ctx) {
+						return APPINDEX.CONTROLLERS[pluginName.toUpperCase()][a](ctx.params, ctx);
+					}
+				};
+			})
+		}
+	} catch (err) {
+		console.error(err)
+	}
+
+	// console.log("PLUGIN", pluginName.toUpperCase(), serviceSchema);
 	
 	broker.createService(serviceSchema);
 }

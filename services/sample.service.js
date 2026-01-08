@@ -8,7 +8,7 @@ let c = 0;
 module.exports = function () {
 	// return new Service(broker, 
 	return {
-		name: "demo",
+		name: "sample",
 		// version: 2,
 
 		actions: {
@@ -54,7 +54,7 @@ module.exports = function () {
 					this.logger.info("slowGet called");
 					const user = _.cloneDeep(this.findByID(ctx.params.id));
 					if (user && ctx.params.withPostCount)
-						return ctx.call("posts.count", { id: user.id }).then(count => {
+						return _call("posts.count", { id: user.id }).then(count => {
 							user.postsCount = count;
 							return user;
 						});

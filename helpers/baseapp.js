@@ -93,6 +93,7 @@ global._helper = async function(helperString, ...args) {
         return false;
     }
 }
+//call controllers available in the server
 global._controller = async function(cmdString, ...args) {
     if(!MAIN_BROKER) {
         throw new Error("MAIN BASE APP is not connected");
@@ -113,14 +114,21 @@ global._controller = async function(cmdString, ...args) {
         return false;
     }
 }
-
-global._appcall = async function(serviceString, ...args) {
+//call any plugin api or services from across any other plugin or part of system
+global._call = async function(serviceString, ...args) {
     log_info("CALLING_SERVICE", serviceString);
 
-    return await MAIN_BROKER.call(serviceString, args, {
-            timeout: 5000,
-            retries: 0
-        });
+    try {
+        const response = await MAIN_BROKER.call(serviceString, args, {
+                timeout: 5000,
+                retries: 0
+            });
+        
+        return response;
+    } catch(err) {
+        console.error(err);
+        return null;
+    }
 }
 
 global.listNodes = async function() {
