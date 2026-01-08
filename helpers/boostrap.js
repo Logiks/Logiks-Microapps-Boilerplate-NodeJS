@@ -12,8 +12,8 @@ const HEARTBEAT_INTERVAL_MS = 10_000;
 
 //Error Controller
 class LogiksError extends MoleculerError {
-  constructor(message = "Internal only action") {
-    super(message, 403, "INTERNAL_ONLY");
+  constructor(message = "Source Not Found") {
+    super(message, 404, "INTERNAL_ONLY");
     this.name = "LogiksError";
   }
 }
