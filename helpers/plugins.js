@@ -247,36 +247,79 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			var ext = ctx.params.file.split(".");
 			ext = ext[ext.length-1];
 			
-			var sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
-			var sourceFile_JSX = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`.replace('.js', ".jsx");
-			
-			if(ctx.params.params.rebuild || ctx.params.params.rebuild==="true") {
-				if(fs.existsSync(sourceFile_JSX)) {
-					sourceFile = sourceFile+1;
+			const FILES = [
+				`plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`,
+				`plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file.replace('.js', ".jsx")}`,
+				`plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file.replace('_mapp', '')}`,
+				`plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file.replace('_mapp', '').replace('.js', ".jsx")}`,
+			].filter((value, index, self) => {
+				return self.indexOf(value) === index;
+			});
+			//console.log("FILES", FILES);
+
+			for(let i=0;i<FILES.length;i++) {
+				if(fs.existsSync(FILES[i])) {
+					
+					//Add Cachng Here if needed
+
+					switch(ext) {
+						case "jsx":
+							const jsContent = JITCOMPILER.compileJSX(FILES[i]);
+
+							return jsContent;
+							break;
+						case "json":
+							var sourceData = fs.readFileSync(FILES[i], "utf8");
+							try {
+								const temp = JSON.parse(sourceData);
+								if(temp) sourceData = temp;
+							} catch(e) {console.error(e)}
+							return sourceData;
+							break;
+						default:
+							var sourceData = fs.readFileSync(FILES[i], "utf8");
+							return sourceData;
+					}
 				}
 			}
 
-			if(fs.existsSync(sourceFile)) {
-				var sourceData = fs.readFileSync(sourceFile, "utf8");
-				try {
-					if(ext=="json") {
-						const temp = JSON.parse(sourceData);
-						if(temp) sourceData = temp;
-					}
-				} catch(e) {console.error(e)}
-				return sourceData;
-			} else if(fs.existsSync(sourceFile_JSX)) {
-				const jsContent = JITCOMPILER.compileJSX(sourceFile_JSX);
+			throw new LogiksError(
+				"Invalid Source File",
+				404,
+				"INVALID_SOURCE_FILE",
+				ctx.params
+			);
 
-				return jsContent;
-			} else {
-				throw new LogiksError(
-					"Invalid Source File",
-					404,
-					"INVALID_SOURCE_FILE",
-					ctx.params
-				);
-			}
+			// var sourceFile = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`;
+			// var sourceFile_JSX = `plugins/${pluginName}/${ctx.params.folder}/${ctx.params.file}`.replace('.js', ".jsx");
+			
+			// if(ctx.params.params.rebuild || ctx.params.params.rebuild==="true") {
+			// 	if(fs.existsSync(sourceFile_JSX)) {
+			// 		sourceFile = sourceFile+1;
+			// 	}
+			// }
+
+			// if(fs.existsSync(sourceFile)) {
+			// 	var sourceData = fs.readFileSync(sourceFile, "utf8");
+			// 	try {
+			// 		if(ext=="json") {
+			// 			const temp = JSON.parse(sourceData);
+			// 			if(temp) sourceData = temp;
+			// 		}
+			// 	} catch(e) {console.error(e)}
+			// 	return sourceData;
+			// } else if(fs.existsSync(sourceFile_JSX)) {
+			// 	const jsContent = JITCOMPILER.compileJSX(sourceFile_JSX);
+
+			// 	return jsContent;
+			// } else {
+			// 	throw new LogiksError(
+			// 		"Invalid Source File",
+			// 		404,
+			// 		"INVALID_SOURCE_FILE",
+			// 		ctx.params
+			// 	);
+			// }
 		}
 	}
 
