@@ -10,7 +10,7 @@ module.exports = {
   compileJSX: async function (filePath) {
     const newPath = filePath.replace(".jsx", ".js");
 
-    log_infog("compileJSX", filePath, newPath);
+    log_info("compileJSX", filePath, newPath);
 
     try {
       const jsx = fs.readFileSync(filePath, "utf8");

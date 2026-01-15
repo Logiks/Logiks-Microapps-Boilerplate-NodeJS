@@ -245,8 +245,8 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 			folder: "string",
 		},
 		async handler(ctx) {
-			var ext = ctx.params.file.split(".");
-			ext = ext[ext.length-1];
+			// var ext = ctx.params.file.split(".");
+			// ext = ext[ext.length-1];
 			
 			// console.log("SOURCE_CALLED", pluginName, ctx.params);
 			log_info("SOURCE_CALLED", pluginName, ctx.params);
@@ -263,8 +263,9 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 
 			for(let i=0;i<FILES.length;i++) {
 				if(fs.existsSync(FILES[i])) {
-					
 					//Add Cachng Here if needed
+					var ext = FILES[i].split(".");
+          			ext = ext[ext.length - 1];
 
 					switch(ext) {
 						case "jsx":
