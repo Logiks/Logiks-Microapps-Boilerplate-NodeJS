@@ -385,7 +385,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 		log_error(err)
 	}
 
-	log_info("PLUGIN", pluginName.toUpperCase(), serviceSchema);
+	// log_info("PLUGIN", pluginName.toUpperCase(), serviceSchema);
 	
 	broker.createService(serviceSchema);
 }
