@@ -46,11 +46,11 @@ module.exports = {
 
         _.each(helperList, function(helperId, k) {
             HELPER_LIST.push(helperId);
-            global[helperId] = new UniversalAPI(helperId);
+            global[helperId] = new UniversalAPI(helperId, "helper");
         });
         _.each(controllerList, function(controllerId, k) {
             CONTROLLER_LIST.push(controllerId);
-            global[controllerId] = new UniversalAPI(controllerId);
+            global[controllerId] = new UniversalAPI(controllerId, "controller");
         });
 
         // console.log("HELPER_LIST", HELPER_LIST);
@@ -211,15 +211,31 @@ global.listNodes = async function() {
 
 //Class used for making universal access for functions available int the AppServer
 class UniversalAPI {
-  constructor(helperId) {
+  constructor(helperId, apiType) {
     return new Proxy(this, {
       get: (target, prop) => {
-        return (...args) => target.handle(helperId, prop, ...args);
+        if(apiType=="helper")
+            return (...args) => target.handleHelper(helperId, prop, ...args);
+        else if(apiType=="controller")
+            return (...args) => target.handleController(helperId, prop, ...args);
+        else
+            return false;
       }
     });
   }
 
-  async handle(helperId, method, ...args) {
+  async handleHelper(helperId, method, ...args) {
+    // console.log("Method:", method);
+    // console.log("Args:", args);
+    // console.log("Helper:", helperId);
+
+    const helperString = `${helperId}.${method}`;
+    //return `Handled ${method}`;
+    
+    return _helper(helperString, ...args);
+  }
+
+  async handleController(helperId, method, ...args) {
     // console.log("Method:", method);
     // console.log("Args:", args);
     // console.log("Helper:", helperId);
