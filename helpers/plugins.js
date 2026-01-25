@@ -236,7 +236,8 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 	const serviceSchema = {
 		name: pluginName,
 		actions: {},
-		methods: {}
+		methods: {},
+		events: {}
 	};
 
 	if(routeConfig.enabled) {
@@ -424,7 +425,7 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 		}
 	}
 
-	//add the api file functions to services for calling across system
+	//add the api file functions to services for calling across system but don't expose them as API
 	try {
 		if(APPINDEX.CONTROLLERS[pluginName.toUpperCase()]) {
 			Object.keys(APPINDEX.CONTROLLERS[pluginName.toUpperCase()]).forEach(a=>{
@@ -435,6 +436,24 @@ function loadPluginRoutes(broker, pluginName, routeConfig) {
 					}
 				};
 			})
+		}
+	} catch (err) {
+		log_error(err)
+	}
+
+	//Event system
+	try {
+		if(routeConfig.events) {
+			_.each(routeConfig.events, function(eventConf, eventKey) {
+				if(eventConf.data!=null) {
+					serviceSchema.events[eventKey] = {
+						async handler(ctx) {
+							// console.log("EVENT_LISTENER",pluginName, eventKey, eventConf, ctx);
+							return await runAction(ctx, eventConf, eventKey, eventKey);
+						}
+					}
+				}
+			});
 		}
 	} catch (err) {
 		log_error(err)
