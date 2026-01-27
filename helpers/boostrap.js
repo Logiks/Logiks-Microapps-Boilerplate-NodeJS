@@ -31,6 +31,16 @@ module.exports = {
 			transporter: process.env.TRANSPORTER || "nats://localhost:4222",
 			namespace: process.env.NAMESPACE || "default",
 
+			metadata: {
+				// authToken: process.env.CLUSTER_TOKEN,
+				role: "worker",
+				version: "1.0.0",
+				uptime: Date.now(),
+				color: WORKER_COLOR,
+				// region: "us-east",
+				// zone: "asia"
+			},
+
 			logger: true,
 			// logger: console,
 			logLevel: process.env.PLUGIN_LOG_LEVEL,//"info",
@@ -40,18 +50,13 @@ module.exports = {
 				enabled: true,
 				retries: 3
 			},
-			metadata: {
-				// authToken: process.env.CLUSTER_TOKEN,
-				nodeRole: "worker",
-				color: WORKER_COLOR
-			},
 
 			metrics: true,
 			statistics: true
 		});
 		
 		// Load all local services
-		broker.loadServices("./services");
+		broker.loadServices("./services", "**/*.service.js");
 
 		return broker;
 	},
@@ -65,6 +70,7 @@ module.exports = {
 				nodeID: broker.nodeID,
 				token: process.env.CLUSTER_TOKEN,
 				role: "worker",
+				meta: broker.metadata,
 				host: os.hostname(),
 				pid: process.pid,
 				pwd: LOGIKS_CONFIG.ROOT_PATH,
